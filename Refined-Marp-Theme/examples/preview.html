@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Refined Marp Theme - Preview</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+          'Microsoft YaHei', sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+        display: flex;
+      }
+
+      /* Left Sidebar */
+      .sidebar {
+        width: 320px;
+        min-width: 200px;
+        max-width: 600px;
+        background: #1e293b;
+        border-right: 1px solid #334155;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        position: relative;
+        transition: margin-left 0.3s ease;
+        will-change: width;
+      }
+
+      .sidebar.resizing {
+        transition: none;
+      }
+
+      .sidebar.collapsed {
+        margin-left: -320px;
+      }
+
+      .sidebar.collapsed-anim {
+        margin-left: -200px;
+      }
+
+      /* Resize Handle */
+      .resize-handle {
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 4px;
+        height: 100%;
+        background: transparent;
+        cursor: ew-resize;
+        z-index: 10;
+        transition: background 0.2s;
+      }
+
+      .resize-handle:hover,
+      .resize-handle.dragging {
+        background: #3b82f6;
+      }
+
+      /* Toggle Button */
+      .sidebar-toggle {
+        position: absolute;
+        right: -16px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 16px;
+        height: 48px;
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-left: none;
+        border-radius: 0 8px 8px 0;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+        font-size: 12px;
+        z-index: 20;
+        transition: all 0.2s;
+      }
+
+      .sidebar-toggle:hover {
+        background: #334155;
+        color: #94a3b8;
+        width: 20px;
+        right: -20px;
+      }
+
+      .sidebar-toggle::before {
+        content: '◀';
+        transition: transform 0.3s ease;
+      }
+
+      .sidebar.collapsed .sidebar-toggle::before {
+        content: '▶';
+      }
+
+      .sidebar-header {
+        padding: 20px;
+        border-bottom: 1px solid #334155;
+      }
+
+      .sidebar-header h1 {
+        font-size: 18px;
+        font-weight: 600;
+        background: linear-gradient(135deg, #60a5fa, #a78bfa);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .sidebar-header p {
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 4px;
+      }
+
+      .filters {
+        padding: 16px;
+        border-bottom: 1px solid #334155;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .filter-row {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .filter-label {
+        font-size: 11px;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 500;
+      }
+
+      .btn-group {
+        display: flex;
+        background: #0f172a;
+        border-radius: 6px;
+        padding: 3px;
+        gap: 2px;
+      }
+
+      .btn {
+        flex: 1;
+        padding: 6px 10px;
+        border: none;
+        background: transparent;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: all 0.2s;
+      }
+
+      .btn:hover {
+        background: #334155;
+        color: #94a3b8;
+      }
+
+      .btn.active {
+        background: #3b82f6;
+        color: #ffffff;
+      }
+
+      .select {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #334155;
+        background: #0f172a;
+        color: #e2e8f0;
+        font-size: 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        outline: none;
+      }
+
+      .select:focus {
+        border-color: #3b82f6;
+      }
+
+      .theme-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px;
+      }
+
+      .theme-list::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .theme-list::-webkit-scrollbar-track {
+        background: #0f172a;
+      }
+
+      .theme-list::-webkit-scrollbar-thumb {
+        background: #334155;
+        border-radius: 3px;
+      }
+
+      .theme-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-bottom: 4px;
+        border: 1px solid transparent;
+      }
+
+      .theme-item:hover {
+        background: #334155;
+      }
+
+      .theme-item.active {
+        background: #1e3a5f;
+        border-color: #3b82f6;
+      }
+
+      .theme-color-dot {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        flex-shrink: 0;
+      }
+
+      .theme-info {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .theme-name {
+        font-size: 13px;
+        font-weight: 500;
+        color: #e2e8f0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .theme-key {
+        font-size: 11px;
+        color: #64748b;
+        font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+      }
+
+      /* Right Preview */
+      .preview-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: #0f172a;
+        min-width: 0;
+      }
+
+      .preview-header {
+        padding: 12px 20px;
+        background: #1e293b;
+        border-bottom: 1px solid #334155;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .preview-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: #e2e8f0;
+        font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+      }
+
+      .open-btn {
+        padding: 6px 14px;
+        background: #3b82f6;
+        color: #ffffff;
+        border: none;
+        border-radius: 5px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.2s;
+      }
+
+      .open-btn:hover {
+        background: #2563eb;
+      }
+
+      .preview-frame {
+        flex: 1;
+        border: none;
+        background: #ffffff;
+        contain: strict;
+      }
+
+      /* 禁用 iframe 在拖动期间的渲染 */
+      .body-resizing .preview-frame {
+        pointer-events: none;
+        visibility: hidden;
+      }
+
+      /* Color definitions */
+      .color-blue {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      }
+      .color-orange {
+        background: linear-gradient(135deg, #f97316, #ea580c);
+      }
+      .color-purple {
+        background: linear-gradient(135deg, #a855f7, #7c3aed);
+      }
+      .color-green {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+      }
+      .color-brown {
+        background: linear-gradient(135deg, #a16207, #854d0e);
+      }
+      .color-pink {
+        background: linear-gradient(135deg, #ec4899, #db2777);
+      }
+      .color-red {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Left Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="resize-handle" id="resizeHandle"></div>
+      <button class="sidebar-toggle" id="sidebarToggle" title="Toggle Sidebar"></button>
+
+      <div class="sidebar-header">
+        <h1>Refined Marp Theme</h1>
+        <p>Preview all theme variations</p>
+      </div>
+
+      <div class="filters">
+        <div class="filter-row">
+          <span class="filter-label">Language</span>
+          <div class="btn-group" id="langGroup">
+            <button class="btn active" data-lang="zh">Chinese</button>
+            <button class="btn" data-lang="en">English</button>
+          </div>
+        </div>
+
+        <div class="filter-row">
+          <span class="filter-label">Color</span>
+          <select class="select" id="colorSelect">
+            <option value="all">All Colors</option>
+            <option value="blue">Blue</option>
+            <option value="orange">Orange</option>
+            <option value="purple">Purple</option>
+            <option value="green">Green</option>
+            <option value="brown">Brown</option>
+            <option value="pink">Pink</option>
+            <option value="red">Red</option>
+          </select>
+        </div>
+
+        <div class="filter-row">
+          <span class="filter-label">Mode</span>
+          <div class="btn-group" id="modeGroup">
+            <button class="btn active" data-mode="all">All</button>
+            <button class="btn" data-mode="light">Light</button>
+            <button class="btn" data-mode="dark">Dark</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="theme-list" id="themeList">
+        <!-- Theme items will be generated by JS -->
+      </div>
+    </div>
+
+    <!-- Right Preview -->
+    <div class="preview-area">
+      <div class="preview-header">
+        <span class="preview-title" id="previewTitle">samples_zh_rmt-light-blue.html</span>
+        <a href="#" class="open-btn" id="openBtn" target="_blank">Open in New Tab</a>
+      </div>
+      <iframe
+        class="preview-frame"
+        id="previewFrame"
+        src="../output/samples_zh_rmt-light-blue.html"
+      ></iframe>
+    </div>
+
+    <script>
+      // Theme configuration
+      const themes = [
+        { name: 'Light Blue', key: 'light-blue', color: 'blue', mode: 'light', icon: '💙' },
+        { name: 'Dark Blue', key: 'dark-blue', color: 'blue', mode: 'dark', icon: '🫐' },
+        { name: 'Light Orange', key: 'light-orange', color: 'orange', mode: 'light', icon: '🧡' },
+        { name: 'Dark Orange', key: 'dark-orange', color: 'orange', mode: 'dark', icon: '🍊' },
+        { name: 'Light Purple', key: 'light-purple', color: 'purple', mode: 'light', icon: '💜' },
+        { name: 'Dark Purple', key: 'dark-purple', color: 'purple', mode: 'dark', icon: '🔮' },
+        { name: 'Light Green', key: 'light-green', color: 'green', mode: 'light', icon: '💚' },
+        { name: 'Dark Green', key: 'dark-green', color: 'green', mode: 'dark', icon: '🥬' },
+        { name: 'Light Brown', key: 'light-brown', color: 'brown', mode: 'light', icon: '🤎' },
+        { name: 'Dark Brown', key: 'dark-brown', color: 'brown', mode: 'dark', icon: '🐻' },
+        { name: 'Light Pink', key: 'light-pink', color: 'pink', mode: 'light', icon: '💗' },
+        { name: 'Dark Pink', key: 'dark-pink', color: 'pink', mode: 'dark', icon: '🌸' },
+        { name: 'Light Red', key: 'light-red', color: 'red', mode: 'light', icon: '❤️' },
+        { name: 'Dark Red', key: 'dark-red', color: 'red', mode: 'dark', icon: '🌹' },
+      ]
+
+      // Current state
+      let currentLang = 'zh'
+      let currentColor = 'all'
+      let currentMode = 'all'
+      let currentTheme = themes[0]
+
+      // Sidebar collapse/expand
+      const sidebar = document.getElementById('sidebar')
+      const sidebarToggle = document.getElementById('sidebarToggle')
+
+      sidebarToggle.addEventListener('click', () => {
+        const width = sidebar.offsetWidth
+        sidebar.classList.toggle('collapsed')
+        if (sidebar.classList.contains('collapsed')) {
+          sidebar.style.marginLeft = `-${width}px`
+          sidebar.classList.add('collapsed-anim')
+        } else {
+          sidebar.style.marginLeft = '0'
+          sidebar.classList.remove('collapsed-anim')
+        }
+      })
+
+      // Resize functionality - optimized with requestAnimationFrame
+      const resizeHandle = document.getElementById('resizeHandle')
+      let isResizing = false
+      let startX = 0
+      let startWidth = 0
+      let animationFrameId = null
+
+      resizeHandle.addEventListener('mousedown', e => {
+        isResizing = true
+        startX = e.clientX
+        startWidth = sidebar.offsetWidth
+        resizeHandle.classList.add('dragging')
+        sidebar.classList.add('resizing')
+        document.body.classList.add('body-resizing')
+        document.body.style.cursor = 'ew-resize'
+        document.body.style.userSelect = 'none'
+      })
+
+      document.addEventListener('mousemove', e => {
+        if (!isResizing) return
+
+        // Cancel previous animation frame
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId)
+        }
+
+        // Use requestAnimationFrame for smooth rendering
+        animationFrameId = requestAnimationFrame(() => {
+          const diff = e.clientX - startX
+          const newWidth = Math.max(200, Math.min(600, startWidth + diff))
+          sidebar.style.width = newWidth + 'px'
+          sidebar.style.minWidth = newWidth + 'px'
+        })
+      })
+
+      document.addEventListener('mouseup', () => {
+        if (isResizing) {
+          isResizing = false
+          resizeHandle.classList.remove('dragging')
+          sidebar.classList.remove('resizing')
+          document.body.classList.remove('body-resizing')
+          document.body.style.cursor = ''
+          document.body.style.userSelect = ''
+          if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId)
+            animationFrameId = null
+          }
+        }
+      })
+
+      // Render theme list
+      function renderThemes() {
+        const list = document.getElementById('themeList')
+        list.innerHTML = ''
+
+        const filteredThemes = themes.filter(theme => {
+          const colorMatch = currentColor === 'all' || theme.color === currentColor
+          const modeMatch = currentMode === 'all' || theme.mode === currentMode
+          return colorMatch && modeMatch
+        })
+
+        filteredThemes.forEach(theme => {
+          const item = document.createElement('div')
+          item.className = 'theme-item' + (theme.key === currentTheme.key ? ' active' : '')
+          item.innerHTML = `
+                    <div class="theme-color-dot color-${theme.color}">${theme.icon}</div>
+                    <div class="theme-info">
+                        <div class="theme-name">${theme.name}</div>
+                        <div class="theme-key">${theme.key}</div>
+                    </div>
+                `
+          item.addEventListener('click', () => selectTheme(theme))
+          list.appendChild(item)
+        })
+      }
+
+      // Select theme
+      function selectTheme(theme) {
+        currentTheme = theme
+        renderThemes()
+        updatePreview()
+      }
+
+      // Update preview
+      function updatePreview() {
+        const filename = `samples_${currentLang}_rmt-${currentTheme.key}.html`
+        const url = `../output/${filename}`
+
+        document.getElementById('previewFrame').src = url
+        document.getElementById('previewTitle').textContent = filename
+        document.getElementById('openBtn').href = url
+      }
+
+      // Language toggle
+      document.getElementById('langGroup').addEventListener('click', e => {
+        if (e.target.classList.contains('btn')) {
+          document
+            .querySelectorAll('#langGroup .btn')
+            .forEach(btn => btn.classList.remove('active'))
+          e.target.classList.add('active')
+          currentLang = e.target.dataset.lang
+          updatePreview()
+        }
+      })
+
+      // Color filter
+      document.getElementById('colorSelect').addEventListener('change', e => {
+        currentColor = e.target.value
+        renderThemes()
+      })
+
+      // Mode filter
+      document.getElementById('modeGroup').addEventListener('click', e => {
+        if (e.target.classList.contains('btn')) {
+          document
+            .querySelectorAll('#modeGroup .btn')
+            .forEach(btn => btn.classList.remove('active'))
+          e.target.classList.add('active')
+          currentMode = e.target.dataset.mode
+          renderThemes()
+        }
+      })
+
+      // Initialize
+      renderThemes()
+      updatePreview()
+    </script>
+  </body>
+</html>
